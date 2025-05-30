@@ -1,0 +1,9 @@
+# Powershell recursive filepath locators
+
+Write-Host "Starting search (skipping unauthorized directories)..." -ForegroundColor Green; $results = Get-ChildItem -Path "\\FILE\dept\Exec\PSRCcommittees\Operations\Agendas", "\\FILE\dept\Exec\PSRCcommittees\Executive Board\Agendas", "\\FILE\dept\Grow\Committees\GMPB", "\\FILE\dept\Trans\Comm\TPB", "\\FILE\dept\EDD\EDD Board of Directors\EDD Board Meetings\Meetings" -Recurse -Include "*.doc", "*.docx" -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -match "([Mm]inutes|[Aa]genda)" } | Select-Object FullName, Name, Length, LastWriteTime; Write-Host "Found $($results.Count) matching files" -ForegroundColor Cyan; $results | Out-File -FilePath "filepaths_raw.txt" -Encoding UTF8; Write-Host "Results saved to filepaths_raw.txt" -ForegroundColor Green
+
+Write-Host "Starting search (skipping unauthorized directories)..." -ForegroundColor Green; $results = Get-ChildItem -Path "\\file\meetings archive" -Recurse -Include "*.vtt" -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -match "(OC|EB|GMPB|TPB|EDD|edd)" } | Select-Object -ExpandProperty FullName | Out-File -FilePath "transcript_filepaths.txt" -Encoding UTF8; Write-Host "Results saved to transcript_filepaths.txt" -ForegroundColor Green
+
+Get-Content "transcript_filepaths.txt" | Add-Content "filepaths_raw.txt"
+
+$content | Set-Content -Path "transcript_filepaths.txt" -Encoding UTF8
