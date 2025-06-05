@@ -139,7 +139,7 @@ file_trios <- dcast(
 
     # Return the corresponding fullpath
     date_found_yes$fullpath[selected_idx]
-  })
+  }) %>% .[, mtg_id:=.I] %>% setcolorder("mtg_id")
 
 # Separate missing sets
 no_transcript        <- file_trios[is.na(transcript)]
