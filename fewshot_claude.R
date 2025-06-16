@@ -10,7 +10,7 @@ ANTHROPIC_BASE_URL <- "https://api.anthropic.com"
 ANTHROPIC_API_KEY <- Sys.getenv("ANTHROPIC_API_KEY")
 
 # Create per-example messages ----
-create_claude_fewshot <- function(agenda_text,
+create_fewshot_claude <- function(agenda_text,
                                   transcript_text,
                                   example_trios,
                                   model_id = claude_model,

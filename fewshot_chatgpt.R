@@ -8,19 +8,18 @@ library(officer)
 library(stringr)
 library(purrr)
 
-gpt_model <- "gpt-4.1-mini-2025-04-14"
+gpt_model <- "gpt-4.1"
+OPENAI_API_KEY <- Sys.getenv("OPENAI_API_KEY")
+if (OPENAI_API_KEY == "") stop("Please set OPENAI_API_KEY environment variable")
 
 # Create per-example messages ----
-create_fewshot_chatgpt <- function(agenda_path, transcript_path, example_trios) {
-
-  agenda_text <- extract_word_text(agenda_path)
-  transcript_text <- extract_vtt_text(transcript_path)
+create_fewshot_chatgpt <- function(agenda_text, transcript_text, example_trios) {
 
   # System message
   system_msg <- list(role = "system",
-                     content = paste0("You are an expert at creating structured meeting minutes for public agency board meetings.",
-                                      "Given an agenda and meeting transcript, you produce concise, professional minutes that follow",
-                                      "the agenda structure, summarize key discussions without quotes, and highlight decisions and action items."))
+                     content = paste("You are an expert at creating structured meeting minutes for public agency board meetings.",
+                                    "Given an agenda and meeting transcript, you produce concise, professional minutes that follow",
+                                    "the agenda structure, summarize key discussions without quotes, and highlight decisions and action items."))
 
   # Chunk user examples by one example at a time
   messages_list <- list()
@@ -49,8 +48,11 @@ create_fewshot_chatgpt <- function(agenda_path, transcript_path, example_trios) 
 }
 
 # Send prompt in chunks ----
-generate_minutes_chatgpt <- function(agenda_text, transcript_text, example_trios,
+generate_minutes_chatgpt <- function(agenda_text, transcript_text, example_trios, template_filepath, output_filepath,
                                      model_id = gpt_model, max_examples = 3) {
+
+  # agenda_text <- extract_word_text(agenda_path)
+  # transcript_text <- extract_vtt_text(transcript_path)
 
   prompt_data <- create_fewshot_chatgpt(agenda_text, transcript_text, example_trios)
 
@@ -87,5 +89,7 @@ generate_minutes_chatgpt <- function(agenda_text, transcript_text, example_trios
   }
 
   result <- resp_body_json(response)
-  return(result$choices[[1]]$message$content)
+  minutes_rawtext <- result$choices[[1]]$message$content
+  markdown_to_word(minutes_rawtext, template_filepath, output_filepath)
+  return(minutes_rawtext)
 }
